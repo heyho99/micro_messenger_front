@@ -4,8 +4,18 @@ FROM httpd:2.4
 # ApacheのデフォルトのWebルートディレクトリにアプリケーションファイルをコピー
 COPY . /usr/local/apache2/htdocs/
 
-# 必要に応じて、Apacheの設定ファイルをカスタマイズしたい場合は以下のコマンドで設定ファイルをコピー
-# COPY ./my-httpd.conf /usr/local/apache2/conf/httpd.conf
+# ServerNameディレクティブを設定して警告を抑制
+RUN echo "ServerName localhost" >> /usr/local/apache2/conf/httpd.conf
 
-# EXPOSEポート（必要であれば、既定でポート80が公開されています）
-EXPOSE 80
+# ポートを1024以上の非特権ポートに変更する（例: 8080）
+RUN sed -i 's/Listen 80/Listen 8080/' /usr/local/apache2/conf/httpd.conf
+
+# Apacheを非特権ユーザーとして実行
+RUN sed -i 's/User daemon/User www-data/' /usr/local/apache2/conf/httpd.conf
+RUN sed -i 's/Group daemon/Group www-data/' /usr/local/apache2/conf/httpd.conf
+
+# EXPOSEポートを8080に設定
+EXPOSE 8080
+
+# コンテナのエントリーポイントとしてApacheを実行
+CMD ["httpd-foreground"]
