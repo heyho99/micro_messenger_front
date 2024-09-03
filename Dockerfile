@@ -14,6 +14,9 @@ RUN sed -i 's/Listen 80/Listen 8080/' /usr/local/apache2/conf/httpd.conf
 RUN sed -i 's/User daemon/User www-data/' /usr/local/apache2/conf/httpd.conf
 RUN sed -i 's/Group daemon/Group www-data/' /usr/local/apache2/conf/httpd.conf
 
+# Apacheのログディレクトリの所有権を変更
+RUN chown -R www-data:www-data /usr/local/apache2/logs/
+
 # EXPOSEポートを8080に設定
 EXPOSE 8080
 
