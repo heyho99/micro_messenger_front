@@ -1,20 +1,33 @@
-# ベースイメージとして公式のApacheイメージを使用
-FROM httpd:2.4
+FROM registry.access.redhat.com/ubi8/ubi:latest
 
-# アプリケーションファイルをApacheのデフォルトのWebルートディレクトリにコピー
-COPY . /usr/local/apache2/htdocs/
+# Install Apache httpd
+RUN dnf -y install httpd && \
+    dnf clean all
 
-# ServerNameディレクティブを設定して警告を抑制
-RUN echo "ServerName localhost" >> /usr/local/apache2/conf/httpd.conf
+# Set ServerName to suppress warnings
+RUN echo "ServerName localhost" >> /etc/httpd/conf/httpd.conf
 
-# ポートを1024以上の非特権ポートに変更する（例: 8080）
-RUN sed -i 's/Listen 80/Listen 8080/' /usr/local/apache2/conf/httpd.conf
+# Change Apache to listen on port 8080
+RUN sed -i 's/^Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
 
-# Apacheのログディレクトリの所有権を変更
-RUN chown -R daemon:daemon /usr/local/apache2/logs/
+# Update the error log path if necessary
+RUN sed -i 's|^ErrorLog .*|ErrorLog /var/log/httpd/error_log|' /etc/httpd/conf/httpd.conf
 
-# EXPOSEポートを8080に設定
+# Create necessary directories and set permissions
+RUN mkdir -p /run/httpd /var/log/httpd && \
+    chmod -R 777 /run/httpd /var/log/httpd
+
+# Remove existing PID file if it exists
+RUN rm -f /run/httpd/httpd.pid
+
+# Copy all files from the current directory to /var/www/html/
+COPY ./ /var/www/html/
+
+# Ensure permissions are set correctly for the web directory
+RUN chmod -R 777 /var/www/html
+
+# Expose port 8080 for the web server
 EXPOSE 8080
 
-# コンテナのエントリーポイントとしてApacheを実行
-CMD ["httpd-foreground"]
+# Start Apache in the foreground
+CMD ["httpd", "-D", "FOREGROUND"]
