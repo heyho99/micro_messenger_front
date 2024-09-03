@@ -10,8 +10,8 @@ RUN echo "ServerName localhost" >> /usr/local/apache2/conf/httpd.conf
 # ポートを1024以上の非特権ポートに変更する（例: 8080）
 RUN sed -i 's/Listen 80/Listen 8080/' /usr/local/apache2/conf/httpd.conf
 
-# Apacheのログディレクトリの所有権をapacheユーザーに変更
-RUN chown -R apache:apache /usr/local/apache2/logs/
+# Apacheのログディレクトリの所有権を変更
+RUN chown -R daemon:daemon /usr/local/apache2/logs/
 
 # EXPOSEポートを8080に設定
 EXPOSE 8080
